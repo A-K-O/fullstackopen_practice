@@ -77,6 +77,10 @@ app.get('/info', (request, response) => {
 	const datenow = new Date().toString();
 	response.send(`<p>Phonebook has info for ${persons.length} people</p><p>${datenow}</p>`)
 })
+
+app.get('/', (request, response) => {
+	response.send('<p>Phonebook API</p>')
+})
 	
 
 const PORT = process.env.PORT || 3001
