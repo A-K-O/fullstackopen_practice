@@ -39,8 +39,9 @@ let persons = [
 ]
 
 app.get('/api/persons', (request, response) => {
-	console.log(persons)
-	response.json(persons)
+	const personsdb = Person.find({})
+	console.log(personsdb)
+	response.json(personsdb)
 })
 
 app.get('/api/persons/:id', (request, response) => {
@@ -60,9 +61,8 @@ app.delete('/api/persons/:id', (request, response) => {
 })
 
 app.post('/api/persons', (request,response) => {
-	const person = request.body
-	person.id = Math.floor((Math.random() * 10000) + 4).toString()
-	if (!person.name || !person.number) {
+	const body = request.body
+	if (!body.name || !body.number) {
 		response.status(422).end()
 	}
 	const dup = persons.find(({name}) => name === person.name)
