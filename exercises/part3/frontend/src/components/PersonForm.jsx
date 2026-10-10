@@ -45,6 +45,13 @@ const addPerson = (event, persons, newName, newNumber, setPersons, setNewName, s
 				setNotificationMessage("")}, 5000
 			)
 		})
+		.catch(error => {
+			console.log(error.response.data.error)
+			setNotificationMessage(error.response.data.error)
+			setTimeout(() => {
+				setNotificationMessage("")}, 5000
+			)
+		})
 }
 
 const PersonForm = ({persons, newName, newNumber, setPersons, setNewName, setNewNumber, setNotificationMessage}) => {

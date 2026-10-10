@@ -6,6 +6,10 @@ const cors = require('cors')
 
 const app = express()
 
+app.use(express.static('dist'))
+app.use(express.json())
+app.use(cors())
+
 const requestLogger = (request, response, next) => {
 	console.log('Method:', request.method)
 	console.log('Path:', request.path)
@@ -14,19 +18,24 @@ const requestLogger = (request, response, next) => {
 	next()
 }
 
+app.use(requestLogger)
+
+const unknownEndpoint = (request, response, next) => {
+	response.status(404).send({ error: 'unknown endpoint' })
+}
+
 const errorHandler = (error, request, response, next) => {
 	console.error(error.message)
 
 	if (error.name === 'CastError') {
 		return response.status(400).send({ error: 'malformatted id' })
-	}
+	} else if (error.name === 'ValidationError') {
+		return response.status(400).json({ error: error.message })
+	}	
 
 	next(error)
 }
 
-app.use(express.static('dist'))
-app.use(express.json())
-app.use(cors())
 
 morgan.token('body_info', (request) => {
 	return JSON.stringify(request.body)
@@ -74,7 +83,7 @@ app.patch('/api/persons/:id', (request, response, next) => {
 		.catch(error => next(error))
 })
 
-app.post('/api/persons', (request,response) => {
+app.post('/api/persons', (request, response, next) => {
 	const { name, number } = request.body
 	
 	if(!name || !number) {
@@ -86,6 +95,7 @@ app.post('/api/persons', (request,response) => {
 	person.save().then(savedPerson => {
 		response.json(savedPerson)
 	})
+	.catch(error => next(error))
 })
 
 app.get('/info', (request, response, next) => {
@@ -100,7 +110,11 @@ app.get('/info', (request, response, next) => {
 app.get('/', (request, response) => {
 	response.send('<p>Phonebook API</p>')
 })
-	
+
+app.use(unknownEndpoint)
+
+app.use(errorHandler)
+
 const PORT = process.env.PORT
 app.listen(PORT, () => {
 	console.log(`Server running on port ${PORT}`)
