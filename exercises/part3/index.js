@@ -20,7 +20,7 @@ const requestLogger = (request, response, next) => {
 
 app.use(requestLogger)
 
-const unknownEndpoint = (request, response, next) => {
+const unknownEndpoint = (request, response) => {
 	response.status(404).send({ error: 'unknown endpoint' })
 }
 
@@ -31,7 +31,7 @@ const errorHandler = (error, request, response, next) => {
 		return response.status(400).send({ error: 'malformatted id' })
 	} else if (error.name === 'ValidationError') {
 		return response.status(400).json({ error: error.message })
-	}	
+	}
 
 	next(error)
 }
@@ -45,7 +45,7 @@ app.use(morgan(':method :url :status :res[content-length] :response-time ms :bod
 
 app.get('/api/persons', (request, response) => {
 	Person.find({}).then(result => {
-			response.json(result)
+		response.json(result)
 	})
 })
 
@@ -55,7 +55,7 @@ app.get('/api/persons/:id', (request, response, next) => {
 			if (person) {
 				response.json(person)
 			} else {
-				response.status(400).send({ error: 'malformatted id'})
+				response.status(400).send({ error: 'malformatted id' })
 			}
 		})
 		.catch(error => next(error))
@@ -63,7 +63,7 @@ app.get('/api/persons/:id', (request, response, next) => {
 
 app.delete('/api/persons/:id', (request, response, next) => {
 	Person.findByIdAndDelete(request.params.id)
-		.then(result => {
+		.then(() => {
 			response.status(204).end()
 		})
 		.catch(error => next(error))
@@ -85,23 +85,23 @@ app.patch('/api/persons/:id', (request, response, next) => {
 
 app.post('/api/persons', (request, response, next) => {
 	const { name, number } = request.body
-	
+
 	if(!name || !number) {
 		return response.status(422).send({ error: 'missing fields' })
 	}
-	
+
 	const person = new Person({ name, number })
 
 	person.save().then(savedPerson => {
 		response.json(savedPerson)
 	})
-	.catch(error => next(error))
+		.catch(error => next(error))
 })
 
 app.get('/info', (request, response, next) => {
 	Person.countDocuments({})
 		.then(result => {
-			const datenow = new Date().toString();
+			const datenow = new Date().toString()
 			response.send(`<p>Phonebook has info for ${result} people</p><p>${datenow}</p>`)
 		})
 		.catch(error => next(error))
